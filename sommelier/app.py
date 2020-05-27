@@ -3,6 +3,8 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from functional import seq
+import urllib.parse
+import time
 
 
 class LidlWine:
@@ -39,6 +41,22 @@ def run():
         lidl_wines.extend(process_single_vineyard_page(single_page_soup))
     logging.info(f'Found {len(lidl_wines)} wines')
     logging.info(lidl_wines)
+
+    for lidl_wine in lidl_wines:
+        query = lidl_wine.name
+        encoded_wine_name = urllib.parse.quote(query)
+        url = f'https://www.vivino.com/search/wines?q={encoded_wine_name}'
+        print(url)
+        page = requests.get(url)
+        time.sleep(10)
+        print(page.content)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        first_found_wine_elem = soup.find('div', class_='wine-card__content')
+        print(first_found_wine_elem.prettify())
+        rating_elem = first_found_wine_elem.find('div', class_='average__number')
+        print(rating_elem.text)
+
+
     logging.info('Application End')
 
 
