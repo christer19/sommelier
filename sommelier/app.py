@@ -6,6 +6,8 @@ from functional import seq
 import urllib.parse
 import time
 
+from sommelier.foo import bar
+
 
 class LidlWine:
     def __init__(self, name, price):
@@ -43,18 +45,20 @@ def run():
     logging.info(lidl_wines)
 
     for lidl_wine in lidl_wines:
-        query = lidl_wine.name
-        encoded_wine_name = urllib.parse.quote(query)
-        url = f'https://www.vivino.com/search/wines?q={encoded_wine_name}'
-        print(url)
-        page = requests.get(url)
-        time.sleep(10)
-        print(page.content)
-        soup = BeautifulSoup(page.content, 'html.parser')
-        first_found_wine_elem = soup.find('div', class_='wine-card__content')
-        print(first_found_wine_elem.prettify())
-        rating_elem = first_found_wine_elem.find('div', class_='average__number')
-        print(rating_elem.text)
+        # query = lidl_wine.name
+        # encoded_wine_name = urllib.parse.quote(query)
+        # url = f'https://www.vivino.com/search/wines?q={encoded_wine_name}'
+        # print(url)
+        # page = requests.get(url)
+        if lidl_wine:
+            page = bar(lidl_wine.name)
+            time.sleep(1)
+            # print(page.content)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            first_found_wine_elem = soup.find('div', class_='wine-card__content')
+            # print(first_found_wine_elem.prettify())
+            rating_elem = first_found_wine_elem.find('div', class_='average__number')
+            print(f'Wino:{lidl_wine.name} cena: {lidl_wine.price} rating: {rating_elem.text}')
 
 
     logging.info('Application End')
