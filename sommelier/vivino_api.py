@@ -1,4 +1,8 @@
+import logging
+from datetime import time
+
 import requests
+from bs4 import BeautifulSoup
 
 headers = {
     'authority': 'www.vivino.com',
@@ -16,14 +20,25 @@ headers = {
 }
 
 
-def bar(wine):
-    params = (
-        ('q', wine),
-    )
-    response = requests.get('https://www.vivino.com/search/wines', headers=headers, params=params)
-    return response
+def get_vivino_rating(wine_name):
+    page = perform_vivino_request_for_wine(wine_name)
+    return extract_wine_rating(page)
 
-# NB. Original query string below. It seems impossible to parse and
-# reproduce query strings 100% accurately so the one below is given
-# in case the reproduced version is not "correct".
-# response = requests.get('https://www.vivino.com/search/wines?q=Baron+De+Ley+Finca+Monasterio+Rioja', headers=headers)
+
+def perform_vivino_request_for_wine(wine_name):
+    params = (
+        ('q', wine_name),
+    )
+    time.sleep(1)
+    page = requests.get('https://www.vivino.com/search/wines', headers=headers, params=params)
+    return page
+
+
+def extract_wine_rating(page):
+    soup = BeautifulSoup(page.content, 'html.parser')
+    first_found_wine_elem = soup.find('div', class_='wine-card__content')
+    if first_found_wine_elem:
+        rating_elem = first_found_wine_elem.find('div', class_='average__number')
+        if rating_elem:
+            return rating_elem.text
+    logging.warning(f'Unable to extract rating from: {first_found_wine_elem.prettify()}')
